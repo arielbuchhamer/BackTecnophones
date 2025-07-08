@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "accesorios")
 public class Accesorio  extends ClaseGenerica{
 	BigDecimal precio;
-	Categoria categoria;
+	String categoriaId;
 	
 	public BigDecimal getPrecio() {
 		return precio;
@@ -16,12 +16,13 @@ public class Accesorio  extends ClaseGenerica{
 	public void setPrecio(BigDecimal precio) {
 		this.precio = precio;
 	}
-	
-	public Categoria getCategoria() {
-		return categoria;
+
+	public String getCategoriaId() {
+		return categoriaId;
+	}
+
+	public void setCategoriaId(String categoriaId) {
+		this.categoriaId = categoriaId;
 	}
 	
-	public void setCategoria(Categoria categoria) {
-		this.categoria = categoria;
-	}
 }

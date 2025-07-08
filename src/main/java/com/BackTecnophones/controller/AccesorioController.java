@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.BackTecnophones.model.Accesorio;
 import com.BackTecnophones.service.AccesorioService;
+import com.BackTecnophones.service.CategoriaService;
 
 @RestController
 @RequestMapping("/accesorios")
@@ -26,9 +28,18 @@ public class AccesorioController {
 	@Autowired
 	private AccesorioService accesorioService;
 	
+	@Autowired
+	private CategoriaService categoriaService;
+	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Accesorio crearAccesorio(@RequestBody Accesorio accesorio) {
+		if (accesorio.getCategoriaId() != null)
+			categoriaService.findById(accesorio.getCategoriaId())
+					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria no encontrada"));
+		else 
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria no puede ser nula");
+		
 		return accesorioService.save(accesorio);
 	}
 

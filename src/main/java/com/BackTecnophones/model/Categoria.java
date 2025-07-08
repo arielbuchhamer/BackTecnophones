@@ -1,5 +1,8 @@
 package com.BackTecnophones.model;
 
-public class Categoria extends ClaseGenerica{
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "categorias")
+public class Categoria extends ClaseGenerica {
 
 }
