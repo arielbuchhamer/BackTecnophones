@@ -45,8 +45,18 @@ public class CategoriaService implements GenericService<Categoria>{
 	{
 		return categoriaRepo.findById(id).map(categoriaExistente -> {
 			categoriaExistente.setDescripcion(categoriaNueva.getDescripcion());
+			categoriaExistente.setRubroId(categoriaNueva.getRubroId());
 
 			return categoriaRepo.save(categoriaExistente);
 		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria no encontrada"));
+	}
+	
+	public List<Categoria> getCategoriaByRubro(String rubroId) {
+		List<Categoria> categorias = categoriaRepo.findByRubroId(rubroId);
+		if (categorias.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"No se encontraron categorias para el rubro especificado");
+		}
+		return categorias;
 	}
 }

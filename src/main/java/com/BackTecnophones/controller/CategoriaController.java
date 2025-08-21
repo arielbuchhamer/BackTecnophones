@@ -53,4 +53,9 @@ public class CategoriaController {
 
 		return ResponseEntity.ok(categoriaActualizada);
 	}
+	
+	@GetMapping("/rubro/{rubroId}")
+    public ResponseEntity<List<Categoria>> getCategoriasByRubro(@PathVariable String rubroId) {
+        return ResponseEntity.ok(categoriaService.getCategoriaByRubro(rubroId));
+    }
 }
