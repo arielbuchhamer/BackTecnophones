@@ -45,6 +45,7 @@ public class ArticuloController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Articulo crearArticulo(@RequestBody Articulo articulo) {
+		
 		if (articulo.getRubroId() != null)
 			rubroService.findById(articulo.getRubroId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rubro no encontrado"));
@@ -56,6 +57,7 @@ public class ArticuloController {
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria no encontrada"));
 		else 
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria no puede ser nula");
+		
 		
 		return articuloService.save(articulo);
 	}
