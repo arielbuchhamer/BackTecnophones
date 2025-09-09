@@ -41,10 +41,22 @@ public class UsuarioService implements GenericService<Usuario>{
 
 	public Usuario updateUsuario(String id, Usuario usuarioNuevo) {
 		return usuarioRepo.findById(id).map(usuarioExistente -> {
-			usuarioExistente.setNombre(usuarioNuevo.getNombre());
+			usuarioExistente.setUserName(usuarioNuevo.getUserName());
 			usuarioExistente.setContraseña(usuarioNuevo.getContraseña());
 
 			return usuarioRepo.save(usuarioExistente);
 		}).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+	}
+	
+	public Optional<Usuario> verificarUsuario(String username, String password) {
+//		Optional<Usuario> usuarioOpt = usuarioRepo.findByUserName(username);
+//
+//        if (usuarioOpt.isEmpty()) 
+//        	return null;
+//
+//        if (usuarioOpt.get().getContraseña().equals(password)) 
+//            return usuarioOpt.get();
+
+        return usuarioRepo.findByUserName(username);
 	}
 }

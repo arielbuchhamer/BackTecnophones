@@ -16,8 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BackTecnophones.model.LoginRequest;
+import com.BackTecnophones.model.UserSession;
 import com.BackTecnophones.model.Usuario;
 import com.BackTecnophones.service.UsuarioService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -53,4 +58,37 @@ public class UsuarioController {
 		
 		return ResponseEntity.ok(usuarioActualizado);
 	}
+	
+	@PostMapping("/verificar")
+	public ResponseEntity<UserSession> verificarAcceso(@RequestBody LoginRequest req, HttpServletRequest request) {
+		Optional<Usuario> usuarioOpt = usuarioService.verificarUsuario(req.username(), req.password());
+		
+		if (usuarioOpt.isEmpty())
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		
+		UserSession session = new UserSession(usuarioOpt.get().getId(), usuarioOpt.get().getNombre());
+
+	    request.getSession(true).setAttribute("USER_SESSION", session);
+		
+		return ResponseEntity.ok(session);
+	}
+	
+	@GetMapping("/me")
+	public ResponseEntity<UserSession> me(HttpServletRequest request) {
+	    HttpSession session = request.getSession(false);
+	    if (session == null) 
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+	    UserSession us = (UserSession) session.getAttribute("USER_SESSION");
+	    if (us == null) 
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+	    return ResponseEntity.ok(us);
+	}
+	
+	@PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok().build();
+    }
 }
