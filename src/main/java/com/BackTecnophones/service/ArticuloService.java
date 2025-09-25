@@ -70,7 +70,7 @@ public class ArticuloService implements GenericService<Articulo>{
 			articuloExistente.setRubroId(articuloNuevo.getRubroId());
 			articuloExistente.setCategoriaId(articuloNuevo.getCategoriaId());
 			
-			if (!articuloExistente.getVariantes().isEmpty())
+			if (!articuloNuevo.getVariantes().isEmpty())
 			{
 				articuloExistente.setVariantes(articuloNuevo.getVariantes());
 				articuloExistente.setStock(articuloNuevo.getVariantes().stream().mapToInt(v -> v.getStockVariante()).sum());
