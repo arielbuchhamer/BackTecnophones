@@ -28,7 +28,7 @@ public class CategoriaService implements GenericService<Categoria>{
 
 	@Override
 	public List<Categoria> findAll() {
-		return categoriaRepo.findAll();
+		return categoriaRepo.findAllByOrderByIdDesc();
 	}
 
 	@Override

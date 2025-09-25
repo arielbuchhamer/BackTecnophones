@@ -28,7 +28,7 @@ public class RubroService implements GenericService<Rubro> {
 
 	@Override
 	public List<Rubro> findAll() {
-		return rubroRepo.findAll();
+		return rubroRepo.findAllByOrderByIdDesc();
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class ArticuloService implements GenericService<Articulo>{
 
 	@Override
 	public List<Articulo> findAll() {
-		return articuloRepo.findAll();
+		return articuloRepo.findAllByOrderByIdDesc();
 	}
 
 	@Override

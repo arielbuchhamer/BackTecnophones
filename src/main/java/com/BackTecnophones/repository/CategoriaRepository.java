@@ -10,4 +10,5 @@ import com.BackTecnophones.model.Categoria;
 @Repository
 public interface CategoriaRepository  extends MongoRepository<Categoria, String>{
 	List<Categoria> findByRubroId(String rubroId);
+	List<Categoria> findAllByOrderByIdDesc();
 }

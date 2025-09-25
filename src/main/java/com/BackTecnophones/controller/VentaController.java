@@ -29,30 +29,13 @@ import com.mercadopago.resources.preference.Preference;
 @RestController
 @RequestMapping("/ventas")
 public class VentaController {
-	private static final String BASE_URL = "http://localhost:9000/";
+	private static final String BASE_URL = "https://tecnophones00.web.app/";
 	@Autowired
 	VentaService ventaService;
 	
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public Venta agregarVenta(@RequestBody Venta venta) {
-		venta.getDetalles().forEach(v -> {
-			System.out.println("Articulo: " + v.getArticuloId());
-			System.out.println("Sku: " + v.getSku());
-			System.out.println("Cantidad: " + v.getCantidad());
-			System.out.println("Precio Unitario: " + v.getPrecioUnitario());
-			System.out.println("SubTotal: " + v.getSubtotal());
-			System.out.println("-----");
-		});
-		System.out.println("---------------------------");
-		System.out.println("Total: " + venta.getTotal());
-		
-		return venta;
-	}
-	
 	@PostMapping("/mp")
 	public String mercado(@RequestBody Venta venta) throws MPException, MPApiException {	
-		MercadoPagoConfig.setAccessToken("APP_USR-1278481914142217-091618-c0a522bcdf862d3592681dc93e5cf0f1-2697250004"); //Cambia para produccion
+		MercadoPagoConfig.setAccessToken("APP_USR-3788939057992741-092214-9f8b513eb2a9b2b25ba1aea0a9a1dc8e-204093481");
 		
 		Venta ventaCreada = generarVentaEnBD(venta);
 		
@@ -69,7 +52,7 @@ public class VentaController {
 				       PreferenceItemRequest.builder()
 				           .id(ventaDetalle.getArticuloId())
 				           .title(ventaDetalle.getArticuloDescripcion())
-//				           .description("") // Descripcion mas larga
+				           .description(ventaDetalle.getArticuloDescripcion()) // Descripcion mas larga
 				           .pictureUrl(BASE_URL + "articulos/" + ventaDetalle.getArticuloId() + "/imagen")
 				           .categoryId("computing")
 				           .quantity(ventaDetalle.getCantidad().intValue())
@@ -86,11 +69,9 @@ public class VentaController {
 		
 		Preference preference = client.create(preferenceRequest);
 		
-		ventaService.registrarPreferencia(ventaCreada.getId(), preference.getId(), preference.getSandboxInitPoint());
-//		ventaService.registrarPreferencia(ventaCreada.getId(), preference.getId(), preference.getInitPoint()); // Para produccion
+		ventaService.registrarPreferencia(ventaCreada.getId(), preference.getId(), preference.getInitPoint());
 		
-		return preference.getInitPoint(); //Esto es para producción
-		//return preference.getSandboxInitPoint(); //Esto es para desarrollo
+		return preference.getInitPoint();
 	}
 	
 	private Venta generarVentaEnBD(Venta venta) {

@@ -30,7 +30,7 @@ public class SecurityConfig {
 	@Bean
 	  public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration cfg = new CorsConfiguration();
-	    cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174", "https://tecnophones00.web.app/")); //5174 Por Romero -> Despues Sacarlo y poner el de produccion
+	    cfg.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:5174", "https://tecnophones00.web.app")); //5174 Por Romero -> Despues Sacarlo y poner el de produccion
 	    cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 	    cfg.setAllowedHeaders(List.of("*"));
 	    cfg.setAllowCredentials(true);
