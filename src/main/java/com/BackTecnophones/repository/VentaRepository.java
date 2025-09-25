@@ -11,6 +11,8 @@ import com.BackTecnophones.model.Venta;
 @Repository
 public interface VentaRepository extends MongoRepository<Venta, String>{
 	Optional<Venta> findByPagoOrderId(String orderId);
+	
     boolean existsByPagoPaymentId(String paymentId);
+    
     List<Venta> findAllByOrderByIdDesc();
 }
