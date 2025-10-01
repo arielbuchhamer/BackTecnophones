@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.BackTecnophones.model.EstadoVenta;
@@ -29,7 +27,9 @@ import com.mercadopago.resources.preference.Preference;
 @RestController
 @RequestMapping("/ventas")
 public class VentaController {
-	private static final String BASE_URL = "https://tecnophones00.web.app/";
+	//private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
+	private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
+	private static final String BASE_URL_BACK = "https://clumsy-lauri-owlsync-48725272.koyeb.app/";
 	@Autowired
 	VentaService ventaService;
 	
@@ -41,9 +41,9 @@ public class VentaController {
 		
 		PreferenceBackUrlsRequest backUrls =
 			   PreferenceBackUrlsRequest.builder()
-			       .success(BASE_URL + "exito")
-			       .pending(BASE_URL + "pendiente")
-			       .failure(BASE_URL + "fallo")
+			       .success(BASE_URL_FRONT + "exito")
+			       .pending(BASE_URL_FRONT + "pendiente")
+			       .failure(BASE_URL_FRONT + "fallo")
 			       .build();
 		
 		List<PreferenceItemRequest> items = new ArrayList<>();
@@ -53,7 +53,7 @@ public class VentaController {
 				           .id(ventaDetalle.getArticuloId())
 				           .title(ventaDetalle.getArticuloDescripcion())
 				           .description(ventaDetalle.getArticuloDescripcion()) // Descripcion mas larga
-				           .pictureUrl(BASE_URL + "articulos/" + ventaDetalle.getArticuloId() + "/imagen")
+				           .pictureUrl(BASE_URL_BACK + "articulos/" + ventaDetalle.getArticuloId() + "/imagen")
 				           .categoryId("computing")
 				           .quantity(ventaDetalle.getCantidad().intValue())
 				           .currencyId("ARS")
@@ -63,7 +63,7 @@ public class VentaController {
 		   	items.add(itemRequest);
 		});
 		
-		PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl(BASE_URL + "webhooks/mp").items(items).backUrls(backUrls).build();
+		PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl(BASE_URL_BACK + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
 		
 		PreferenceClient client = new PreferenceClient();
 		
