@@ -84,5 +84,10 @@ public class ArticuloService implements GenericService<Articulo>{
 			return articuloRepo.save(articuloExistente);
 		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Articulo no encontrado"));
 	}
+	
+	public List<Articulo> getArticulosRandom(int limit) {
+		int safeLimit = Math.max(1, Math.min(limit, 50));
+		return articuloRepo.findArticulosRandom(safeLimit);
+	}
 
 }

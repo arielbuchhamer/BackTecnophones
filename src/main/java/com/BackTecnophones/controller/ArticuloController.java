@@ -123,4 +123,9 @@ public class ArticuloController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error subiendo imagen", e);
         }
     }
+	
+	@GetMapping("/random")
+	public List<Articulo> getRandomArticulos(@RequestParam(defaultValue = "12") int limit) {
+	    return articuloService.getArticulosRandom(limit);
+	}
 }
