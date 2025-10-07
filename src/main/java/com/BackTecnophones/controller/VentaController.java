@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,7 @@ import com.mercadopago.resources.preference.Preference;
 public class VentaController {
 	//private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
 	private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
-	private static final String BASE_URL_BACK = "https://clumsy-lauri-owlsync-48725272.koyeb.app/";
+	private static final String BASE_URL_BACK = "https://tecnophonesback.zeabur.app/";
 	@Autowired
 	VentaService ventaService;
 	
@@ -81,6 +82,11 @@ public class VentaController {
 		venta.setFechaCreacion(LocalDate.now());
 		
 		return ventaService.save(venta);
+	}
+	
+	@GetMapping("/aprobadas")
+	private List<Venta> getVentasAprobadas() {
+		return ventaService.findVentasByEstadoOrderByFechaCreacionDesc(EstadoVenta.APROBADO);
 	}
 	
 }
