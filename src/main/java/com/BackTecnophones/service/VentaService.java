@@ -39,8 +39,7 @@ public class VentaService implements GenericService<Venta>{
 
 	@Override
 	public List<Venta> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return ventaRepo.findAll();
 	}
 
 	@Override
@@ -50,8 +49,7 @@ public class VentaService implements GenericService<Venta>{
 
 	@Override
 	public void delete(String id) {
-		// TODO Auto-generated method stub
-		
+		// No implementado
 	}
 	
 	public void registrarPreferencia(String ventaId, String preferenceId, String checkoutUrl) {
@@ -119,5 +117,9 @@ public class VentaService implements GenericService<Venta>{
 		venta.setEstado(estadoVenta);
 		
 		ventaRepo.save(venta);
+	}
+	
+	public List<Venta> findVentasByEstadoOrderByFechaCreacionDesc(EstadoVenta estado) {
+		return ventaRepo.findByEstadoOrderByFechaCreacionDesc(estado);
 	}
 }

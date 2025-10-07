@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import com.BackTecnophones.model.EstadoVenta;
 import com.BackTecnophones.model.Venta;
 
 @Repository
@@ -15,4 +16,6 @@ public interface VentaRepository extends MongoRepository<Venta, String>{
     boolean existsByPagoPaymentId(String paymentId);
     
     List<Venta> findAllByOrderByIdDesc();
+    
+    List<Venta> findByEstadoOrderByFechaCreacionDesc(EstadoVenta estado);
 }
