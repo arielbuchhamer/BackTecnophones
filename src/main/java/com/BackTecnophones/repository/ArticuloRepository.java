@@ -17,4 +17,6 @@ public interface ArticuloRepository extends MongoRepository<Articulo, String>{
 	        "{ $project: { _id: 1, descripcion: 1, precio: 1, imageId: 1 } }"
 	    })
 	List<Articulo> findArticulosRandom(int size);
+	
+	List<Articulo> findByRubroIdOrderByIdDesc(String rubroId);
 }

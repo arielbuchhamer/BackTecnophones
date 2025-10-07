@@ -128,4 +128,9 @@ public class ArticuloController {
 	public List<Articulo> getRandomArticulos(@RequestParam(defaultValue = "12") int limit) {
 	    return articuloService.getArticulosRandom(limit);
 	}
+	
+	@GetMapping("/articulosbyrubro/{id}")
+	public List<Articulo> getArticulosByRubroId(@PathVariable String id) {
+		return articuloService.getArticulosByRubroId(id);
+	}
 }

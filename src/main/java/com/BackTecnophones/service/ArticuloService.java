@@ -89,5 +89,9 @@ public class ArticuloService implements GenericService<Articulo>{
 		int safeLimit = Math.max(1, Math.min(limit, 50));
 		return articuloRepo.findArticulosRandom(safeLimit);
 	}
+	
+	public List<Articulo> getArticulosByRubroId(String rubroId) {
+		return articuloRepo.findByRubroIdOrderByIdDesc(rubroId);
+	}
 
 }

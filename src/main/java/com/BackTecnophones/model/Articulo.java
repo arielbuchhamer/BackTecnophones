@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -11,6 +12,7 @@ import lombok.Data;
 
 @Data
 @Document(collection = "articulos")
+@CompoundIndex(name = "idx_rubro_id_desc", def = "{'rubroId': 1, '_id': -1}")
 public class Articulo extends ClaseGenerica {
 	private BigDecimal precio;
 	private Integer stock;
