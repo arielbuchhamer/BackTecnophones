@@ -1,5 +1,6 @@
 package com.BackTecnophones.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -81,7 +82,7 @@ public class VentaService implements GenericService<Venta>{
             venta.setEstado(EstadoVenta.APROBADO);
             venta.getPago().setPaymentId(String.valueOf(paymentId));
             venta.getPago().setPaymentStatusDetail(payment.getStatusDetail());  // ej: "accredited"
-            venta.getPago().setFechaPago(ZonedDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")));
+            venta.getPago().setFechaPago(Instant.now());
 
             this.save(venta);
         	

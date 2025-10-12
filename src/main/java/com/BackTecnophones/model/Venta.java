@@ -1,6 +1,7 @@
 package com.BackTecnophones.model;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -28,7 +29,7 @@ public class Venta {
 	private Direccion direccionEnvio;
 	private List<VentaDetalle> detalles = new ArrayList<>();
     private BigDecimal total;
-	private ZonedDateTime fechaCreacion;
+	private Instant fechaCreacion;
 	
 	@Data
 	public static class Pago {
@@ -38,12 +39,12 @@ public class Venta {
 		@Indexed(unique = true) // No puede haber dos ventas con el mismo paymentId
 		private String paymentId;		// id de pago
 		private String paymentStatusDetail;
-		private ZonedDateTime fechaPago;
+		private Instant fechaPago;
 		
 		public Pago() {}
 		
 		public Pago(String orderId, String preferenceId, String checkoutUrl, String paymentId,
-				String paymentStatusDetail, ZonedDateTime fechaPago) {
+				String paymentStatusDetail, Instant fechaPago) {
 			super();
 			this.orderId = orderId;
 			this.preferenceId = preferenceId;
