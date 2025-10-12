@@ -27,7 +27,7 @@ public class Venta {
 	private Direccion direccionEnvio;
 	private List<VentaDetalle> detalles = new ArrayList<>();
     private BigDecimal total;
-	private LocalDate fechaCreacion;
+	private LocalDateTime fechaCreacion;
 	
 	@Data
 	public static class Pago {

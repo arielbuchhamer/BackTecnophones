@@ -1,6 +1,7 @@
 package com.BackTecnophones.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -79,7 +80,7 @@ public class VentaController {
 		venta.setPago(new Pago());
 		venta.getPago().setOrderId(UUID.randomUUID().toString());
 		venta.setEstado(EstadoVenta.PENDIENTE);
-		venta.setFechaCreacion(LocalDate.now());
+		venta.setFechaCreacion(LocalDateTime.now());
 		
 		return ventaService.save(venta);
 	}
