@@ -4,13 +4,17 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Document(collection = "articulos")
 @CompoundIndex(name = "idx_rubro_id_desc", def = "{'rubroId': 1, '_id': -1}")
 public class Articulo extends ClaseGenerica {
@@ -20,6 +24,12 @@ public class Articulo extends ClaseGenerica {
 	private String rubroId;
 	private String categoriaId;
 	private List<Variante> variantes = new ArrayList<>();
+	@ReadOnlyProperty
+    @Field("rubroDescripcion")
+	private String rubroDescripcion;
+	@ReadOnlyProperty
+    @Field("categoriaDescripcion")
+	private String categoriaDescripcion;
 
 	@Data
 	public static class Variante {

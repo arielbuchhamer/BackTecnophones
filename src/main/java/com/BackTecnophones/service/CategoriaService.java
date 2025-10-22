@@ -59,4 +59,8 @@ public class CategoriaService implements GenericService<Categoria>{
 		}
 		return categorias;
 	}
+	
+	public List<Categoria> getCategoriasWithRubro() {
+		return categoriaRepo.findAllEntityWithRubroDescripcion();
+	}
 }
