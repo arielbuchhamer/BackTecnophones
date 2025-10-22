@@ -1,16 +1,18 @@
 package com.BackTecnophones.model;
 
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = false)
 @Document(collection = "categorias")
 public class Categoria extends ClaseGenerica {
-	String rubroId;
-	
-	public String getRubroId() {
-		return rubroId;
-	}
-	
-	public void setRubroId(String rubroId) {
-		this.rubroId = rubroId;
-	}
+	private String rubroId;
+	@ReadOnlyProperty
+    @Field("rubroDescripcion")
+    private String rubroDescripcion;
 }

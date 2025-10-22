@@ -58,4 +58,9 @@ public class CategoriaController {
     public ResponseEntity<List<Categoria>> getCategoriasByRubro(@PathVariable String rubroId) {
         return ResponseEntity.ok(categoriaService.getCategoriaByRubro(rubroId));
     }
+	
+	@GetMapping("/conrubro")
+	public List<Categoria> getCategoriasConRubro() {
+		return categoriaService.getCategoriasWithRubro();
+	}
 }

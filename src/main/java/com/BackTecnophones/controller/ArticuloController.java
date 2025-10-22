@@ -133,4 +133,9 @@ public class ArticuloController {
 	public List<Articulo> getArticulosByRubroId(@PathVariable String id) {
 		return articuloService.getArticulosByRubroId(id);
 	}
+	
+	@GetMapping("/completo")
+	public List<Articulo> obtenerArticulosCompletos() {
+		return articuloService.getArticulosCompletos();
+	}
 }
