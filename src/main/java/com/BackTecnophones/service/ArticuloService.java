@@ -94,4 +94,7 @@ public class ArticuloService implements GenericService<Articulo>{
 		return articuloRepo.findByRubroIdOrderByIdDesc(rubroId);
 	}
 
+	public List<Articulo> getArticulosCompletos() {
+		  return articuloRepo.findAllCompletos();
+		}
 }
