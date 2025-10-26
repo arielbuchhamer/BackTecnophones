@@ -125,4 +125,10 @@ public class VentaService implements GenericService<Venta>{
 	public List<Venta> findVentasByEstadoOrderByFechaCreacionDesc(EstadoVenta estado) {
 		return ventaRepo.findByEstadoOrderByFechaCreacionDesc(estado);
 	}
+	
+	public void setVistoVenta(Venta venta) {
+		venta.setVisto(true);
+		
+		ventaRepo.save(venta); 
+	}
 }

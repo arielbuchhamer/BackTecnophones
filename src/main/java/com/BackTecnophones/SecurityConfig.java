@@ -20,9 +20,8 @@ public class SecurityConfig {
 	      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 	      .csrf(csrf -> csrf.disable())
 	      .authorizeHttpRequests(auth -> auth
-	          .requestMatchers("/verificar", "/logout").permitAll() // Publicos
-	          .anyRequest().permitAll()
-//	          .anyRequest().authenticated() -> Para produccion
+	          .requestMatchers("/verificar", "/logout", "/articulos/**", "/categorias/**", "/rubros/**", "/webhooks/mp/**").permitAll() // Publicos
+	          .anyRequest().authenticated() // -> Para produccion
 	      );
 	    return http.build();
 	  }
@@ -30,7 +29,7 @@ public class SecurityConfig {
 	@Bean
 	  public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration cfg = new CorsConfiguration();
-	    cfg.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:5174", "https://tecnophones00.web.app")); //5174 Por Romero -> Despues Sacarlo y poner el de produccion
+	    cfg.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:5174", "https://tecnophones00.web.app", "https://tecnophones.com.ar")); //5174 Por Romero -> Despues Sacarlo y poner el de produccion
 	    cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 	    cfg.setAllowedHeaders(List.of("*"));
 	    cfg.setAllowCredentials(true);

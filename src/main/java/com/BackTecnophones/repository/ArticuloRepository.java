@@ -18,25 +18,37 @@ public interface ArticuloRepository extends MongoRepository<Articulo, String>{
 	    })
 	List<Articulo> findArticulosRandom(int size);
 	
-	List<Articulo> findByRubroIdOrderByIdDesc(String rubroId);
+	@Aggregation(pipeline = {
+			  "{ $match: { rubroId: ?0 } }",
+			  "{ $addFields: { categoriaIdObj: { $convert: { input: \"$categoriaId\", to: \"objectId\", onError: null, onNull: null } } } }",
+			  "{ $lookup: { from: \"categorias\", localField: \"categoriaIdObj\", foreignField: \"_id\", as: \"categoria\" } }",
+			  "{ $unwind: { path: \"$categoria\", preserveNullAndEmptyArrays: true } }",
+			  "{ $project: { " +
+			      "_id: 1, descripcion: 1, stock: 1, precio: 1, variantes: 1, rubroId: 1, categoriaId: 1, imageId: 1, " +  // <- COMA ACÁ
+			      "categoriaDescripcion: { $ifNull: [ \"$categoria.descripcion\", \"\" ] } " +
+			    "} }",
+			  "{ $sort: { _id: -1 } }"
+			})
+			List<Articulo> findByRubroIdOrderByIdDesc(String rubroId);
+
 	
 	@Aggregation(pipeline = {
-		    // Convierte strings a ObjectId; si falla, deja null (no truena el pipeline)
-		    "{ $addFields: { " +
-		      "rubroIdObj: { $convert: { input: \"$rubroId\", to: \"objectId\", onError: null, onNull: null } }, " +
-		      "categoriaIdObj: { $convert: { input: \"$categoriaId\", to: \"objectId\", onError: null, onNull: null } } " +
-		    "} }",
-		    // Join con rubro y categoria
-		    "{ $lookup: { from: \"rubros\", localField: \"rubroIdObj\", foreignField: \"_id\", as: \"rubro\" } }",
-		    "{ $unwind: { path: \"$rubro\", preserveNullAndEmptyArrays: true } }",
-		    "{ $lookup: { from: \"categorias\", localField: \"categoriaIdObj\", foreignField: \"_id\", as: \"categoria\" } }",
-		    "{ $unwind: { path: \"$categoria\", preserveNullAndEmptyArrays: true } }",
-		    // Proyección final: solo lo que necesitás
-		    "{ $project: { " +
-		      "_id: 1, descripcion: 1, stock: 1, precio: 1, variantes: 1, rubroId: 1, categoriaId: 1, imageId: 1 " +
-		      "rubroDescripcion: { $ifNull: [ \"$rubro.descripcion\", \"\" ] }, " +
-		      "categoriaDescripcion: { $ifNull: [ \"$categoria.descripcion\", \"\" ] } " +
-		    "} }"
-		  })
-		  List<Articulo> findAllCompletos();
+    // Convierte strings a ObjectId; si falla, deja null (no truena el pipeline)
+    "{ $addFields: { " +
+      "rubroIdObj: { $convert: { input: \"$rubroId\", to: \"objectId\", onError: null, onNull: null } }, " +
+      "categoriaIdObj: { $convert: { input: \"$categoriaId\", to: \"objectId\", onError: null, onNull: null } } " +
+    "} }",
+    // Join con rubro y categoria
+    "{ $lookup: { from: \"rubros\", localField: \"rubroIdObj\", foreignField: \"_id\", as: \"rubro\" } }",
+    "{ $unwind: { path: \"$rubro\", preserveNullAndEmptyArrays: true } }",
+    "{ $lookup: { from: \"categorias\", localField: \"categoriaIdObj\", foreignField: \"_id\", as: \"categoria\" } }",
+    "{ $unwind: { path: \"$categoria\", preserveNullAndEmptyArrays: true } }",
+    // Proyección final: solo lo que necesitás
+    "{ $project: { " +
+      "_id: 1, descripcion: 1, stock: 1, precio: 1, variantes: 1, rubroId: 1, categoriaId: 1, imageId: 1 " +
+      "rubroDescripcion: { $ifNull: [ \"$rubro.descripcion\", \"\" ] }, " +
+      "categoriaDescripcion: { $ifNull: [ \"$categoria.descripcion\", \"\" ] } " +
+    "} }"
+  })
+  List<Articulo> findAllCompletos();
 }
