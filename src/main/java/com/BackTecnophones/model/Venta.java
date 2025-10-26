@@ -30,6 +30,7 @@ public class Venta {
 	private List<VentaDetalle> detalles = new ArrayList<>();
     private BigDecimal total;
 	private Instant fechaCreacion;
+	private boolean visto = false;
 	
 	@Data
 	public static class Pago {

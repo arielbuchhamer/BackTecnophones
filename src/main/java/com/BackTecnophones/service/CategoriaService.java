@@ -52,12 +52,7 @@ public class CategoriaService implements GenericService<Categoria>{
 	}
 	
 	public List<Categoria> getCategoriaByRubro(String rubroId) {
-		List<Categoria> categorias = categoriaRepo.findByRubroId(rubroId);
-		if (categorias.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-					"No se encontraron categorias para el rubro especificado");
-		}
-		return categorias;
+		return categoriaRepo.findByRubroId(rubroId);
 	}
 	
 	public List<Categoria> getCategoriasWithRubro() {
