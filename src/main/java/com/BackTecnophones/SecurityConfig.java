@@ -20,7 +20,7 @@ public class SecurityConfig {
 	      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 	      .csrf(csrf -> csrf.disable())
 	      .authorizeHttpRequests(auth -> auth
-	          .requestMatchers("/usuarios/verificar", "/usuarios/logout", "/auth/login", "/login", "/articulos/**", "/categorias/**", "/rubros/**", "/webhooks/mp/**").permitAll() // Publicos
+	          .requestMatchers("/usuarios/verificar", "/usuarios/logout", "/auth/login", "/login", "/articulos/**", "/categorias/**", "/rubros/**", "/ventas/mp", "/ventas/aprobadas", "/webhooks/mp/**").permitAll() // Publicos
 	          .anyRequest().authenticated() // -> Para produccion
 	      );
 	    return http.build();
