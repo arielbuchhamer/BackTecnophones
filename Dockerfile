@@ -1,24 +1,16 @@
-# Etapa 1: compilar el proyecto
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM maven:3.9-eclipse-temurin-21
 WORKDIR /app
 
-# Copiamos el pom y descargamos dependencias
+# Bajar dependencias primero (cachea mejor)
 COPY pom.xml .
-RUN ./mvnw dependency:go-offline || true
+RUN mvn -B -ntp dependency:go-offline
 
-# Copiamos el resto del código y construimos el jar
+# Copiar código y compilar
 COPY . .
-RUN ./mvnw clean package -DskipTests
+RUN mvn -B -ntp clean package -DskipTests
 
-# Etapa 2: imagen final (más liviana)
-FROM eclipse-temurin:21-jdk-alpine
-WORKDIR /app
+# Exponer puerto
+EXPOSE 9000
 
-# Copiamos el jar compilado desde la etapa anterior
-COPY --from=build /app/target/*.jar app.jar
-
-# Puerto por defecto
-EXPOSE 8080
-
-# Comando para ejecutar la app
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Ejecutar el jar generado
+CMD ["sh", "-c", "java -jar target/*.jar"]
