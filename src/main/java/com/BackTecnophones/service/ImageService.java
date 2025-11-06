@@ -2,7 +2,6 @@ package com.BackTecnophones.service;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.types.ObjectId;
@@ -18,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
 
@@ -37,22 +37,6 @@ public class ImageService {
     }
     
     // obtiene la imagen por imageId y la devuelve como ResponseEntity (para endpoint)
-//    public ResponseEntity<InputStreamResource> getImage(String imageId) throws IOException {
-//        GridFSFile gridFSFile = gridFsTemplate.findOne(Query.query(Criteria.where("_id").is(new ObjectId(imageId))));
-//        if (gridFSFile == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        GridFsResource resource = gridFsTemplate.getResource(gridFSFile);
-//        String contentType = resource.getContentType() != null ? resource.getContentType() : MediaType.APPLICATION_OCTET_STREAM_VALUE;
-//        InputStreamResource inputStream = new InputStreamResource(resource.getInputStream());
-//
-//        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + gridFSFile.getFilename() + "\"")
-//                .contentLength(gridFSFile.getLength())
-//                .contentType(MediaType.parseMediaType(contentType))
-//                .body(inputStream);
-//    }
-    
     public ResponseEntity<InputStreamResource> getImage(String imageId) throws IOException {
     	GridFSFile gridFSFile;
         try {
@@ -103,5 +87,9 @@ public class ImageService {
         if (f.endsWith(".png")) return MediaType.IMAGE_PNG_VALUE;
         if (f.endsWith(".gif")) return MediaType.IMAGE_GIF_VALUE;
         return MediaType.APPLICATION_OCTET_STREAM_VALUE;
+    }
+    
+    public String getPublicUrl(String imageId) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/articulos/images/").path(imageId).toUriString();
     }
 }
