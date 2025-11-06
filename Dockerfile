@@ -10,7 +10,7 @@ COPY . .
 RUN mvn -B -ntp clean package -DskipTests
 
 # Exponer puerto
-EXPOSE 9000
+EXPOSE 8080
 
 # Ejecutar el jar generado
 CMD ["sh", "-c", "java -jar target/*.jar"]
