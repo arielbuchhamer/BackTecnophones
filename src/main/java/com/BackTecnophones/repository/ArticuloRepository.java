@@ -48,7 +48,8 @@ public interface ArticuloRepository extends MongoRepository<Articulo, String>{
       "_id: 1, descripcion: 1, stock: 1, precio: 1, variantes: 1, rubroId: 1, categoriaId: 1, imageId: 1 " +
       "rubroDescripcion: { $ifNull: [ \"$rubro.descripcion\", \"\" ] }, " +
       "categoriaDescripcion: { $ifNull: [ \"$categoria.descripcion\", \"\" ] } " +
-    "} }"
+    "} }",
+	"{ $sort: { _id: -1 } }"
   })
   List<Articulo> findAllCompletos();
 }

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.ReadOnlyProperty;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -36,14 +35,16 @@ public class Articulo extends ClaseGenerica {
 	    private String sku;             
 	    private String color;
 	    private Integer stockVariante;
+	    private String imageVariante;
 	    
 	    public Variante() {}
 	    
-		public Variante(String sku, String color, Integer stockVariante) {
+		public Variante(String sku, String color, Integer stockVariante, String imageVariante) {
 			super();
 			this.sku = sku;
 			this.color = color;
 			this.stockVariante = stockVariante;
+			this.imageVariante = imageVariante;
 		}
 	}
 }

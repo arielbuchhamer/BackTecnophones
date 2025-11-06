@@ -1,5 +1,7 @@
 package com.BackTecnophones.controller;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,17 +87,35 @@ public class ArticuloController {
 	}
 		
 	
+//	@PostMapping("/images")
+//    public Map<String, String> uploadImage(@RequestParam("file") MultipartFile file) {
+//        try {
+//            String imageId = imageService.store(file);
+//            Map<String, String> res = new HashMap<>();
+//            res.put("id", imageId);
+//            return res;
+//        } catch (Exception e) {
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error guardando imagen", e);
+//        }
+//    }
+	
 	@PostMapping("/images")
-    public Map<String, String> uploadImage(@RequestParam("file") MultipartFile file) {
-        try {
-            String imageId = imageService.store(file);
-            Map<String, String> res = new HashMap<>();
-            res.put("id", imageId);
-            return res;
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error guardando imagen", e);
-        }
-    }
+	public List<Map<String, String>> uploadImages(@RequestParam("files") List<MultipartFile> files) {
+	    List<Map<String, String>> response = new ArrayList<>();
+
+	    files.forEach(file -> {
+	    	try {
+	            String imageId = imageService.store(file);
+	            Map<String, String> res = new HashMap<>();
+	            res.put("id", imageId);
+	            response.add(res);
+	        } catch (Exception e) {
+	            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error guardando imagen: " + file.getOriginalFilename(), e);
+	        }
+	    });
+
+	    return response;
+	}
 	
 	@GetMapping("/{id}/imagen")
     public ResponseEntity<?> getAccesorioImage(@PathVariable String id) {
@@ -110,6 +130,26 @@ public class ArticuloController {
             }
         }).orElse(ResponseEntity.notFound().build());
     }
+	
+	@PostMapping("/imagenes/obtener-urls")
+	public Map<String, String> obtenerUrlsDeImagenes(@RequestBody List<String> idsImagenes) {
+	    Map<String, String> urls = new HashMap<>();
+
+	    for (String id : idsImagenes) {
+	        try {
+	            urls.put(id, imageService.getPublicUrl(id));
+	        } catch (Exception e) {
+	            urls.put(id, null);
+	        }
+	    }
+
+	    return urls;
+	}
+	
+	@GetMapping("/images/{imageId}")
+	public ResponseEntity<?> obtenerImagenPorId(@PathVariable String imageId) throws IOException {
+	    return imageService.getImage(imageId);
+	}
 	
 	@PostMapping("/{id}/imagen")
     public Articulo attachImageToAccesorio(@PathVariable String id, @RequestParam("file") MultipartFile file) {
