@@ -85,19 +85,6 @@ public class ArticuloController {
 		
 		return ResponseEntity.ok(articuloActualizado);
 	}
-		
-	
-//	@PostMapping("/images")
-//    public Map<String, String> uploadImage(@RequestParam("file") MultipartFile file) {
-//        try {
-//            String imageId = imageService.store(file);
-//            Map<String, String> res = new HashMap<>();
-//            res.put("id", imageId);
-//            return res;
-//        } catch (Exception e) {
-//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error guardando imagen", e);
-//        }
-//    }
 	
 	@PostMapping("/images")
 	public List<Map<String, String>> uploadImages(@RequestParam("files") List<MultipartFile> files) {
@@ -149,6 +136,11 @@ public class ArticuloController {
 	@GetMapping("/images/{imageId}")
 	public ResponseEntity<?> obtenerImagenPorId(@PathVariable String imageId) throws IOException {
 	    return imageService.getImage(imageId);
+	}
+	
+	@GetMapping("/images/miniatura/{imageId}")
+	public ResponseEntity<?> obtenerImgMiniaturaPorId(@PathVariable String imageId) throws IOException {
+	    return imageService.obtenerMiniatura(imageId);
 	}
 	
 	@PostMapping("/{id}/imagen")
