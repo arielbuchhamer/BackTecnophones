@@ -2,12 +2,6 @@ package com.BackTecnophones.controller;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +42,7 @@ public class VentaController {
 	
 	@PostMapping("/mp")
 	public String mercado(@RequestBody Venta venta) throws MPException, MPApiException {	
-		MercadoPagoConfig.setAccessToken("APP_USR-3788939057992741-092214-9f8b513eb2a9b2b25ba1aea0a9a1dc8e-204093481");
+		MercadoPagoConfig.setAccessToken("APP_USR-8836744955592659-112717-6b4a2956c0caca4a33754249a169c9c5-324027017");
 		
 		Venta ventaCreada = generarVentaEnBD(venta);
 		

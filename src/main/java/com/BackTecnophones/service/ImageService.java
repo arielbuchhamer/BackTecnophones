@@ -124,7 +124,6 @@ public class ImageService {
         if (original == null) 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 
-        // --- 🔥 Ancho deseado para la miniatura (ideal para carrusel)
         int anchoMiniatura = 200;
 
         // Thumbnaiator es para el procesamiento de imagenes
