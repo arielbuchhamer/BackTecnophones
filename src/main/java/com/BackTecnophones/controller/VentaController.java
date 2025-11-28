@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -87,9 +88,17 @@ public class VentaController {
 			art.ifPresent(a -> {
 				if (detalle.getSku() == null && BigDecimal.valueOf(a.getStock()).compareTo(detalle.getCantidad()) < 0)
 					throw new RuntimeException("No hay stock suficiente para el artículo: " + a.getDescripcion());
-				else 
+				else if (detalle.getSku() != null)
 				{
-					Integer stockVar = a.getVariantes().stream().filter(artic -> artic.getSku() == detalle.getSku()).findFirst().get().getStockVariante();
+					var varianteOpt = a.getVariantes().stream()
+				            .filter(artic -> Objects.equals(artic.getSku(), detalle.getSku()))
+				            .findFirst();
+					
+					if (varianteOpt.isEmpty()) {
+			            throw new RuntimeException("Error con el codigo del producto " + a.getDescripcion());
+			        }
+					
+					Integer stockVar = varianteOpt.get().getStockVariante();
 					if (BigDecimal.valueOf(stockVar).compareTo(detalle.getCantidad()) < 0)
 						throw new RuntimeException("No hay stock suficiente para el artículo: " + a.getDescripcion());
 				}
