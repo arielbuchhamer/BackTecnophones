@@ -148,6 +148,59 @@ public class ImageService {
                 .body(cuerpo);
     }
     
+    public ResponseEntity<InputStreamResource> obtenerMediana(String imageId) throws IOException {
+        GridFSFile archivoGrid;
+        try {
+            archivoGrid = gridFsTemplate.findOne(
+                    Query.query(Criteria.where("_id").is(new ObjectId(imageId)))
+            );
+        } catch (IllegalArgumentException iae) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (archivoGrid == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        GridFsResource recurso = gridFsTemplate.getResource(archivoGrid);
+
+        String tipoContenido = recurso.getContentType();
+        if (tipoContenido == null || tipoContenido.isBlank()) {
+            tipoContenido = inferirTipoContenido(archivoGrid.getFilename());
+        }
+
+        // Leer imagen original desde GridFS
+        BufferedImage original = ImageIO.read(recurso.getInputStream());
+        if (original == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        // Tamaño máximo para la imagen mediana (detalle de producto)
+        int anchoMaximo = 1080;
+        int altoMaximo  = 1080;
+
+        // Redimensionar manteniendo proporciones
+        BufferedImage mediana = Thumbnails.of(original)
+                .size(anchoMaximo, altoMaximo) // máximo 1080x1080
+                .keepAspectRatio(true)
+                .asBufferedImage();
+
+        // Formato de salida según el tipo de contenido original
+        String formato = convertirTipoAFormato(tipoContenido);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(mediana, formato, baos);
+
+        byte[] bytes = baos.toByteArray();
+        InputStreamResource cuerpo = new InputStreamResource(new ByteArrayInputStream(bytes));
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
+                .contentLength(bytes.length)
+                .contentType(MediaType.parseMediaType(tipoContenido))
+                .body(cuerpo);
+    }
+    
     private String inferirTipoContenido(String nombreArchivo) {
         if (nombreArchivo == null) return "image/jpeg";
 

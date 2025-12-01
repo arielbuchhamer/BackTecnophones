@@ -143,6 +143,11 @@ public class ArticuloController {
 	    return imageService.obtenerMiniatura(imageId);
 	}
 	
+	@GetMapping("/images/mediana/{imageId}")
+	public ResponseEntity<?> obtenerImgMedianaPorId(@PathVariable String imageId) throws IOException {
+	    return imageService.obtenerMediana(imageId);
+	}
+	
 	@PostMapping("/{id}/imagen")
     public Articulo attachImageToAccesorio(@PathVariable String id, @RequestParam("file") MultipartFile file) {
         try {
