@@ -35,7 +35,7 @@ import com.mercadopago.resources.preference.Preference;
 public class VentaController {
 	//private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
 	private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
-	private static final String BASE_URL_BACK = "https://tecnophonesback.zeabur.app/";
+	private static final String BASE_URL_BACK = "https://api.tecnophones.com.ar/";
 	@Autowired
 	VentaService ventaService;
 	@Autowired
