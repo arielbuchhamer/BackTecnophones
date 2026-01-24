@@ -33,8 +33,7 @@ import com.mercadopago.resources.preference.Preference;
 @RestController
 @RequestMapping("/ventas")
 public class VentaController {
-	//private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
-	private static final String BASE_URL_FRONT = "https://tecnophones00.web.app/";
+	private static final String BASE_URL_FRONT = "https://tecnophones.com.ar/";
 	private static final String BASE_URL_BACK = "https://api.tecnophones.com.ar/";
 	@Autowired
 	VentaService ventaService;
@@ -72,6 +71,8 @@ public class VentaController {
 		});
 		
 		PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl(BASE_URL_BACK + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
+		// Para probar localmente, con url de ngrok
+		//PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl("https://bec6ed0eb568.ngrok-free.app/" + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
 		
 		PreferenceClient client = new PreferenceClient();
 		

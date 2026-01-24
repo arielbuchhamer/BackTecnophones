@@ -2,6 +2,8 @@ package com.BackTecnophones.controller;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +24,14 @@ public class MercadoPagoWebhookController {
 	@Autowired
 	VentaService ventaService;
 	
+	private static final Logger logger =
+            LoggerFactory.getLogger(MercadoPagoWebhookController.class);
+	
 	 @PostMapping
 	 public ResponseEntity<String> receive(@RequestParam Map<String, String> params, @RequestHeader(value="X-Request-Id", required=false) String requestId, @RequestBody(required=false) String body) {
 		 String type = params.get("type");
 		 String dataId = params.get("data.id");
+		 logger.info("Webhook recibido. type={}, dataId={}", type, dataId);
 		 
 		 if (!"payment".equalsIgnoreCase(type) || dataId == null) 
 	            return ResponseEntity.ok("ignored");
@@ -35,6 +41,10 @@ public class MercadoPagoWebhookController {
 	            // Traer el pago de MP
 	            PaymentClient paymentClient = new PaymentClient();
 	            Payment payment = paymentClient.get(paymentId);
+	            
+	            logger.info("Payment status={}, externalRef={}",
+	                    payment.getStatus(),
+	                    payment.getExternalReference());
 	
 	            // Verificar estado
 	            if ("approved".equalsIgnoreCase(payment.getStatus())) {
@@ -57,7 +67,8 @@ public class MercadoPagoWebhookController {
 	                return ResponseEntity.ok("status updated");
 	            }
 	        } catch (Exception e) {
-	            return ResponseEntity.status(HttpStatus.OK).body("error");
+	        	 logger.error("Error procesando webhook MP", e);
+	        	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error");
 	        }
 	 }
 }
