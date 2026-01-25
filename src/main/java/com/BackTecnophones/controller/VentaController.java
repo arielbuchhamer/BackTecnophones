@@ -70,9 +70,26 @@ public class VentaController {
 		   	items.add(itemRequest);
 		});
 		
+		BigDecimal costoEnvio = ventaCreada.getCostoEnvio();
+
+		if (costoEnvio != null && costoEnvio.compareTo(BigDecimal.ZERO) > 0) 
+		{
+		    items.add(
+		        PreferenceItemRequest.builder()
+		            .id("ENVIO")
+		            .title("Envío a domicilio")
+		            .description("Costo de envío")
+		            .categoryId("shipping")
+		            .quantity(1)
+		            .currencyId("ARS")
+		            .unitPrice(costoEnvio)
+		            .build()
+		    );
+		}
+		
 		PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl(BASE_URL_BACK + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
 		// Para probar localmente, con url de ngrok
-		//PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl("https://bec6ed0eb568.ngrok-free.app/" + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
+		//PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl("https://eb7addb7c8e2.ngrok-free.app/" + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
 		
 		PreferenceClient client = new PreferenceClient();
 		

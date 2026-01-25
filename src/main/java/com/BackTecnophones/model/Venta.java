@@ -28,6 +28,7 @@ public class Venta {
 	private String telefonoCliente;
 	private Direccion direccionEnvio;
 	private List<VentaDetalle> detalles = new ArrayList<>();
+	private BigDecimal costoEnvio;
     private BigDecimal total;
 	private Instant fechaCreacion;
 	private boolean visto = false;
