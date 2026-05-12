@@ -1,24 +1,35 @@
 package com.BackTecnophones.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.BackTecnophones.client.AfRelayClient;
+import com.BackTecnophones.config.FacturacionProperties;
 import com.BackTecnophones.exception.AfRelayException;
 import com.BackTecnophones.exception.ComprobanteException;
+import com.BackTecnophones.model.facturacion.AlicuotaIva;
 import com.BackTecnophones.model.facturacion.ComprobanteEmitido;
+import com.BackTecnophones.model.facturacion.ComprobanteImportes;
+import com.BackTecnophones.model.facturacion.ComprobanteItem;
+import com.BackTecnophones.model.facturacion.ComprobanteManualItem;
+import com.BackTecnophones.model.facturacion.ComprobanteManualSolicitud;
 import com.BackTecnophones.model.facturacion.ComprobanteSolicitud;
 import com.BackTecnophones.model.facturacion.CondicionIva;
 import com.BackTecnophones.model.facturacion.DatosFiscales;
+import com.BackTecnophones.model.facturacion.DatosEmisor;
 import com.BackTecnophones.model.facturacion.EstadoComprobante;
 import com.BackTecnophones.model.facturacion.TipoDocumento;
 import com.BackTecnophones.repository.ComprobanteEmitidoRepository;
@@ -30,6 +41,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class ComprobanteService {
 	private static final DateTimeFormatter ARCA_DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
+	private static final DateTimeFormatter IDEMPOTENCY_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS");
+	private static final int MONEY_SCALE = 2;
 
 	private final ComprobanteEmitidoRepository comprobanteRepository;
 	private final ComprobanteFiscalValidator validator;
@@ -37,6 +50,7 @@ public class ComprobanteService {
 	private final AfRelayClient afRelayClient;
 	private final ComprobantePdfService comprobantePdfService;
 	private final ObjectMapper objectMapper;
+	private final FacturacionProperties facturacionProperties;
 
 	public ComprobanteService(
 			ComprobanteEmitidoRepository comprobanteRepository,
@@ -44,13 +58,19 @@ public class ComprobanteService {
 			NumeracionComprobanteService numeracionService,
 			AfRelayClient afRelayClient,
 			ComprobantePdfService comprobantePdfService,
-			ObjectMapper objectMapper) {
+			ObjectMapper objectMapper,
+			FacturacionProperties facturacionProperties) {
 		this.comprobanteRepository = comprobanteRepository;
 		this.validator = validator;
 		this.numeracionService = numeracionService;
 		this.afRelayClient = afRelayClient;
 		this.comprobantePdfService = comprobantePdfService;
 		this.objectMapper = objectMapper;
+		this.facturacionProperties = facturacionProperties;
+	}
+
+	public ComprobanteEmitido generarComprobanteManual(ComprobanteManualSolicitud solicitudManual) {
+		return generarComprobante(convertirAComprobanteSolicitud(solicitudManual));
 	}
 
 	public ComprobanteEmitido generarComprobante(ComprobanteSolicitud solicitud) {
@@ -120,6 +140,129 @@ public class ComprobanteService {
 		return comprobanteRepository.findAll();
 	}
 
+	// Completa los datos fijos y calculables que el front manual no necesita enviar.
+	private ComprobanteSolicitud convertirAComprobanteSolicitud(ComprobanteManualSolicitud solicitudManual) {
+		if (solicitudManual == null) {
+			throw new ComprobanteException("La solicitud manual no puede ser nula");
+		}
+
+		ComprobanteSolicitud solicitud = new ComprobanteSolicitud();
+		solicitud.setIdempotencyKey(idempotencyKeyManual(solicitudManual));
+		solicitud.setEmisor(emisorConfigurado());
+		solicitud.setCliente(clienteManual(solicitudManual));
+		solicitud.setTipoComprobante(facturacionProperties.getTipoComprobante());
+		solicitud.setPuntoVenta(facturacionProperties.getPuntoVenta());
+		solicitud.setConcepto(1);
+		solicitud.setFecha(solicitudManual.getFecha() == null ? LocalDate.now() : solicitudManual.getFecha());
+		solicitud.setMoneda(facturacionProperties.getMoneda());
+		solicitud.setCotizacion(facturacionProperties.getCotizacion());
+
+		ImportesCalculados calculados = calcularItemsEImportes(solicitudManual.getItems());
+		solicitud.setItems(calculados.items());
+		solicitud.setImportes(calculados.importes());
+		return solicitud;
+	}
+
+	private String idempotencyKeyManual(ComprobanteManualSolicitud solicitudManual) {
+		if (solicitudManual.getIdempotencyKey() != null && !solicitudManual.getIdempotencyKey().isBlank()) {
+			return solicitudManual.getIdempotencyKey();
+		}
+
+		String fecha = IDEMPOTENCY_DATE_FORMATTER.format(LocalDateTime.now());
+		String suffix = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+		return "LOCAL-MANUAL-" + fecha + "-" + suffix;
+	}
+
+	private DatosEmisor emisorConfigurado() {
+		FacturacionProperties.Emisor emisorProperties = facturacionProperties.getEmisor();
+		DatosEmisor emisor = new DatosEmisor();
+		emisor.setCuit(emisorProperties.getCuit());
+		emisor.setRazonSocial(emisorProperties.getRazonSocial());
+		emisor.setCondicionIva(emisorProperties.getCondicionIva());
+		emisor.setDomicilio(emisorProperties.getDomicilio());
+		emisor.setIngresosBrutos(emisorProperties.getIngresosBrutos());
+		emisor.setInicioActividades(emisorProperties.getInicioActividades());
+		return emisor;
+	}
+
+	private com.BackTecnophones.model.facturacion.DatosCliente clienteManual(ComprobanteManualSolicitud solicitudManual) {
+		if (solicitudManual.getCliente() == null) {
+			throw new ComprobanteException("cliente es obligatorio");
+		}
+
+		com.BackTecnophones.model.facturacion.DatosCliente cliente = solicitudManual.getCliente();
+		if (cliente.getCondicionIva() == null) {
+			cliente.setCondicionIva(CondicionIva.CONSUMIDOR_FINAL);
+		}
+		if (cliente.getTipoDocumento() == null) {
+			cliente.setTipoDocumento(TipoDocumento.CONSUMIDOR_FINAL);
+		}
+		return cliente;
+	}
+
+	private ImportesCalculados calcularItemsEImportes(List<ComprobanteManualItem> itemsManuales) {
+		if (itemsManuales == null || itemsManuales.isEmpty()) {
+			throw new ComprobanteException("items no puede estar vacio");
+		}
+
+		List<ComprobanteItem> items = new ArrayList<>();
+		BigDecimal neto = BigDecimal.ZERO;
+		BigDecimal iva = BigDecimal.ZERO;
+		BigDecimal total = BigDecimal.ZERO;
+		AlicuotaIva alicuota = facturacionProperties.getAlicuotaIvaDefault();
+
+		for (ComprobanteManualItem itemManual : itemsManuales) {
+			if (itemManual == null) {
+				throw new ComprobanteException("Cada item debe tener datos");
+			}
+			if (itemManual.getPrecioUnitario() == null) {
+				throw new ComprobanteException("Cada item debe tener precioUnitario");
+			}
+			if (itemManual.getCantidad() == null) {
+				throw new ComprobanteException("Cada item debe tener cantidad");
+			}
+
+			ComprobanteItem item = new ComprobanteItem();
+			item.setDescripcion(itemManual.getDescripcion());
+			item.setCantidad(itemManual.getCantidad());
+			item.setPrecioUnitario(redondear(itemManual.getPrecioUnitario()));
+			item.setAlicuotaIva(alicuota);
+
+			BigDecimal subtotal = redondear(item.getPrecioUnitario().multiply(item.getCantidad()));
+			BigDecimal netoItem = netoDesdePrecioFinal(subtotal, alicuota);
+			BigDecimal ivaItem = redondear(subtotal.subtract(netoItem));
+
+			item.setSubtotal(subtotal);
+			item.setImporteIva(ivaItem);
+			items.add(item);
+
+			neto = neto.add(netoItem);
+			iva = iva.add(ivaItem);
+			total = total.add(subtotal);
+		}
+
+		ComprobanteImportes importes = new ComprobanteImportes();
+		importes.setNeto(redondear(neto));
+		importes.setIva(redondear(iva));
+		importes.setTributos(BigDecimal.ZERO.setScale(MONEY_SCALE));
+		importes.setExento(BigDecimal.ZERO.setScale(MONEY_SCALE));
+		importes.setNoGravado(BigDecimal.ZERO.setScale(MONEY_SCALE));
+		importes.setTotal(redondear(total));
+		return new ImportesCalculados(items, importes);
+	}
+
+	private BigDecimal netoDesdePrecioFinal(BigDecimal precioFinal, AlicuotaIva alicuota) {
+		BigDecimal divisor = BigDecimal.ONE.add(alicuota.getPorcentaje().divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+		return precioFinal.divide(divisor, MONEY_SCALE, RoundingMode.HALF_UP);
+	}
+
+	private BigDecimal redondear(BigDecimal value) {
+		if (value == null) {
+			return null;
+		}
+		return value.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+	}
+
 	private void generarPdf(ComprobanteEmitido comprobante) {
 		try {
 			comprobante.setPdfPath(comprobantePdfService.generarPdf(comprobante));
@@ -152,6 +295,12 @@ public class ComprobanteService {
 		detalle.put("MonId", solicitud.getMoneda() == null ? "PES" : solicitud.getMoneda());
 		detalle.put("MonCotiz", solicitud.getCotizacion() == null ? BigDecimal.ONE : solicitud.getCotizacion());
 		detalle.put("CondicionIVAReceptorId", condicionIvaReceptorId(solicitud.getCliente().getCondicionIva()));
+		if (iva.compareTo(BigDecimal.ZERO) > 0) {
+			detalle.put("Iva", Map.of("AlicIva", List.of(Map.of(
+					"Id", facturacionProperties.getAlicuotaIvaDefault().getCodigoArca(),
+					"BaseImp", neto,
+					"Importe", iva))));
+		}
 
 		Map<String, Object> feDetReq = new LinkedHashMap<>();
 		feDetReq.put("FECAEDetRequest", List.of(detalle));
@@ -254,5 +403,8 @@ public class ComprobanteService {
 		} catch (JsonProcessingException e) {
 			throw new ComprobanteException("No se pudo serializar informacion fiscal", e);
 		}
+	}
+
+	private record ImportesCalculados(List<ComprobanteItem> items, ComprobanteImportes importes) {
 	}
 }

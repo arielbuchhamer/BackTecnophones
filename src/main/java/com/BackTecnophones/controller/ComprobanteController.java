@@ -24,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.BackTecnophones.exception.AfRelayException;
 import com.BackTecnophones.exception.ComprobanteException;
 import com.BackTecnophones.model.facturacion.ComprobanteEmitido;
+import com.BackTecnophones.model.facturacion.ComprobanteManualSolicitud;
 import com.BackTecnophones.model.facturacion.ComprobanteSolicitud;
 import com.BackTecnophones.service.ComprobanteService;
 
@@ -41,6 +42,18 @@ public class ComprobanteController {
 	public ComprobanteEmitido crearComprobante(@RequestBody ComprobanteSolicitud solicitud) {
 		try {
 			return conPdfUrl(comprobanteService.generarComprobante(solicitud));
+		} catch (ComprobanteException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+		} catch (AfRelayException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, e.getMessage(), e);
+		}
+	}
+
+	@PostMapping("/manual")
+	@ResponseStatus(HttpStatus.CREATED)
+	public ComprobanteEmitido crearComprobanteManual(@RequestBody ComprobanteManualSolicitud solicitud) {
+		try {
+			return conPdfUrl(comprobanteService.generarComprobanteManual(solicitud));
 		} catch (ComprobanteException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
 		} catch (AfRelayException e) {
