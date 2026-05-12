@@ -35,6 +35,7 @@ public class ComprobanteService {
 	private final ComprobanteFiscalValidator validator;
 	private final NumeracionComprobanteService numeracionService;
 	private final AfRelayClient afRelayClient;
+	private final ComprobantePdfService comprobantePdfService;
 	private final ObjectMapper objectMapper;
 
 	public ComprobanteService(
@@ -42,11 +43,13 @@ public class ComprobanteService {
 			ComprobanteFiscalValidator validator,
 			NumeracionComprobanteService numeracionService,
 			AfRelayClient afRelayClient,
+			ComprobantePdfService comprobantePdfService,
 			ObjectMapper objectMapper) {
 		this.comprobanteRepository = comprobanteRepository;
 		this.validator = validator;
 		this.numeracionService = numeracionService;
 		this.afRelayClient = afRelayClient;
+		this.comprobantePdfService = comprobantePdfService;
 		this.objectMapper = objectMapper;
 	}
 
@@ -55,7 +58,13 @@ public class ComprobanteService {
 
 		Optional<ComprobanteEmitido> existente = comprobanteRepository.findByIdempotencyKey(solicitud.getIdempotencyKey());
 		if (existente.isPresent() && existente.get().getEstado() != EstadoComprobante.ERROR) {
-			return existente.get();
+			ComprobanteEmitido comprobanteExistente = existente.get();
+			if (comprobanteExistente.getEstado() == EstadoComprobante.AUTORIZADO
+					&& (comprobanteExistente.getPdfPath() == null || comprobanteExistente.getPdfPath().isBlank())) {
+				generarPdf(comprobanteExistente);
+				return comprobanteRepository.save(comprobanteExistente);
+			}
+			return comprobanteExistente;
 		}
 
 		ComprobanteEmitido comprobante = existente.orElseGet(ComprobanteEmitido::new);
@@ -89,6 +98,7 @@ public class ComprobanteService {
 
 			comprobante.setEstado(EstadoComprobante.AUTORIZADO);
 			comprobante.setFechaAutorizacion(Instant.now());
+			generarPdf(comprobante);
 			return comprobanteRepository.save(comprobante);
 		} catch (AfRelayException | ComprobanteException e) {
 			comprobante.setEstado(EstadoComprobante.ERROR);
@@ -108,6 +118,14 @@ public class ComprobanteService {
 
 	public List<ComprobanteEmitido> findAll() {
 		return comprobanteRepository.findAll();
+	}
+
+	private void generarPdf(ComprobanteEmitido comprobante) {
+		try {
+			comprobante.setPdfPath(comprobantePdfService.generarPdf(comprobante));
+		} catch (ComprobanteException e) {
+			comprobante.setError(e.getMessage());
+		}
 	}
 
 	private Map<String, Object> armarSolicitudAfRelay(ComprobanteSolicitud solicitud, Long numeroComprobante) {
