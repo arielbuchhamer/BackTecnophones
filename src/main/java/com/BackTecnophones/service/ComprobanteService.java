@@ -209,7 +209,8 @@ public class ComprobanteService {
 		BigDecimal neto = BigDecimal.ZERO;
 		BigDecimal iva = BigDecimal.ZERO;
 		BigDecimal total = BigDecimal.ZERO;
-		AlicuotaIva alicuota = facturacionProperties.getAlicuotaIvaDefault();
+		boolean esMonotributo = facturacionProperties.getTipoComprobante().name().endsWith("_C");
+		AlicuotaIva alicuota = esMonotributo ? null : facturacionProperties.getAlicuotaIvaDefault();
 
 		for (ComprobanteManualItem itemManual : itemsManuales) {
 			if (itemManual == null) {
@@ -229,8 +230,15 @@ public class ComprobanteService {
 			item.setAlicuotaIva(alicuota);
 
 			BigDecimal subtotal = redondear(item.getPrecioUnitario().multiply(item.getCantidad()));
-			BigDecimal netoItem = netoDesdePrecioFinal(subtotal, alicuota);
-			BigDecimal ivaItem = redondear(subtotal.subtract(netoItem));
+			BigDecimal netoItem;
+			BigDecimal ivaItem;
+			if (esMonotributo) {
+				netoItem = subtotal;
+				ivaItem = BigDecimal.ZERO.setScale(MONEY_SCALE);
+			} else {
+				netoItem = netoDesdePrecioFinal(subtotal, alicuota);
+				ivaItem = redondear(subtotal.subtract(netoItem));
+			}
 
 			item.setSubtotal(subtotal);
 			item.setImporteIva(ivaItem);
