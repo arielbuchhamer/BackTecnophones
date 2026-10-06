@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,6 @@ import com.BackTecnophones.model.Venta;
 import com.BackTecnophones.model.Venta.Pago;
 import com.BackTecnophones.service.ArticuloService;
 import com.BackTecnophones.service.VentaService;
-import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
@@ -34,7 +34,8 @@ import com.mercadopago.resources.preference.Preference;
 @RequestMapping("/ventas")
 public class VentaController {
 	private static final String BASE_URL_FRONT = "https://tecnophones.com.ar/";
-	private static final String BASE_URL_BACK = "https://api.tecnophones.com.ar/";
+	@Value("${app.base-url-back}")
+	private String baseUrlBack;
 	@Autowired
 	VentaService ventaService;
 	@Autowired
@@ -42,8 +43,6 @@ public class VentaController {
 	
 	@PostMapping("/mp")
 	public String mercado(@RequestBody Venta venta) throws MPException, MPApiException {	
-		MercadoPagoConfig.setAccessToken("APP_USR-8836744955592659-112717-6b4a2956c0caca4a33754249a169c9c5-324027017");
-		
 		Venta ventaCreada = generarVentaEnBD(venta);
 		
 		PreferenceBackUrlsRequest backUrls =
@@ -60,7 +59,7 @@ public class VentaController {
 				           .id(ventaDetalle.getArticuloId())
 				           .title(ventaDetalle.getArticuloDescripcion())
 				           .description(ventaDetalle.getArticuloDescripcion()) // Descripcion mas larga
-				           .pictureUrl(BASE_URL_BACK + "articulos/" + ventaDetalle.getArticuloId() + "/imagen")
+				           .pictureUrl(baseUrlBack + "articulos/" + ventaDetalle.getArticuloId() + "/imagen")
 				           .categoryId("computing")
 				           .quantity(ventaDetalle.getCantidad().intValue())
 				           .currencyId("ARS")
@@ -87,7 +86,7 @@ public class VentaController {
 		    );
 		}
 		
-		PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl(BASE_URL_BACK + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
+		PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl(baseUrlBack + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
 		// Para probar localmente, con url de ngrok
 		//PreferenceRequest preferenceRequest = PreferenceRequest.builder().externalReference(venta.getPago().getOrderId()).notificationUrl("https://eb7addb7c8e2.ngrok-free.app/" + "webhooks/mp").items(items).backUrls(backUrls).autoReturn("approved").build();
 		
