@@ -61,6 +61,7 @@ public class MercadoPagoWebhookController {
 	                //    - Generar Venta (persistir)
 	                //    - Marcar paymentId como procesado
 	                ventaService.confirmarVentaDesdePago(orderId, paymentId, payment);
+	                logger.info("Venta aprobada. orderId={}, paymentId={}", orderId, paymentId);
 	
 	                return ResponseEntity.ok("ok");
 	            } else {
