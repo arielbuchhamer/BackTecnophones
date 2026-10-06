@@ -72,7 +72,7 @@ public class VentaService implements GenericService<Venta>{
         try {
         	// Descuento de stock atómico por cada item
             venta.getDetalles().forEach(det -> {
-            	disminuirStock(det.getArticuloId(), det.getCantidad().intValue());
+            	disminuirStock(det.getArticuloId(), det.getSku(), det.getCantidad().intValue());
             	descontados.add(det);
             });
 
@@ -91,20 +91,33 @@ public class VentaService implements GenericService<Venta>{
     }
 	
 	// Se resta stock asi porque es atomico(o hace todo, o no hace nada) y no se expone a condiciones de carrera. Es una sola operacion atomica: Si no hay sotck suficiente no modificada nada
-	private void disminuirStock(String articuloId, int cantidad) {
+	private void disminuirStock(String articuloId, String sku, int cantidad) {
 		Query q = new Query(Criteria.where("_id").is(articuloId).and("stock").gte(cantidad));
         Update u = new Update().inc("stock", -cantidad);
+
+        // Si es una variante, tambien se descuenta de esa variante (el stock general es la suma de las variantes)
+        if (sku != null) {
+        	q.addCriteria(Criteria.where("variantes").elemMatch(Criteria.where("sku").is(sku).and("stockVariante").gte(cantidad)));
+        	u.inc("variantes.$.stockVariante", -cantidad);
+        }
+
         UpdateResult r = mongoTemplate.updateFirst(q, u, Articulo.class);
 
         // Me fijo si hay stock suficiente
         if (r.getModifiedCount() == 0) 
-        	throw new IllegalStateException("Stock insuficiente para articulo=" + articuloId);
+        	throw new IllegalStateException("Stock insuficiente para articulo=" + articuloId + (sku != null ? ", sku=" + sku : ""));
 	}
 	
 	private void revertirStockParcial(List<VentaDetalle> descontados) {
 		descontados.forEach(det -> {
             Query q = new Query(Criteria.where("_id").is(det.getArticuloId()));
             Update u = new Update().inc("stock", +det.getCantidad().intValue());
+
+            if (det.getSku() != null) {
+            	q.addCriteria(Criteria.where("variantes.sku").is(det.getSku()));
+            	u.inc("variantes.$.stockVariante", +det.getCantidad().intValue());
+            }
+
             mongoTemplate.updateFirst(q, u, Articulo.class);
 		});
     }
